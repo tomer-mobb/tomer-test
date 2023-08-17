@@ -1,25 +1,31 @@
 on: [pull_request]
 
 jobs:
-  test_job:
+  Checkmarx-Mobb-example:
     runs-on: ubuntu-latest
-    name: Run Checkmarx SAST scan
+    name: Run SAST scan with Checkmarx and feed finding to Mobb to get automated fixes
     steps:
-      # To use this repository's private action,
-      # you must check out the repository
-      - name: Checkout
+      - name: Checkout repo to get code
         uses: actions/checkout@v3
-      - uses: actions/setup-node@v3.6.0
+      - name: Setup Node on this machine
+        uses: actions/setup-node@v3.6.0
         with:
           node-version: 18
-      - run: |
-          # Run Checkmarx scan using their CLI
-          npx snyk auth ${{ secrets.SNYK_API_KEY }}
-          ! npx snyk code test --sarif-file-output=/home/runner/report.json ./
+      - name: Download and configure Checkmarx CLI
+        run: |
+          wget https://github.com/Checkmarx/ast-cli/releases/download/2.0.54/ast-cli_2.0.54_linux_x64.tar.gz -O checkmarx.tar.gz
+          tar -xf checkmarx.tar.gz
+          ./cx configure set --prop-name cx_apikey --prop-value ${{ secrets.CX_API_KEY }}
+          ./cx configure set --prop-name cx_base_auth_uri --prop-value ${{ secrets.CX_BASE_AUTH_URI }}
+          ./cx configure set --prop-name cx_base_uri --prop-value ${{ secrets.CX_BASE_URI }}
+          ./cx configure set --prop-name cx_tenant --prop-value ${{ secrets.CX_TENANT }}
         shell: bash -l {0}
-      # - name: Mobb action step
-      #   uses: ./ # Uses an action in the root directory
-      #   with:
-      #     report-file: "/home/runner/report.json"
-      #     api-key: ${{ secrets.MOBB_API_TOKEN }}
-      #     github-token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Run Checkmarx SAST scan
+        run: ./cx scan create --project-name tomer-test-project -s ./ --report-format json --scan-types sast --branch nobranch
+        shell: bash -l {0}
+      - name: Run Mobb on the findings and get fixes
+        uses: mobb-dev/action@v1
+        with:
+          report-file: "cx_result.json"
+          api-key: ${{ secrets.MOBB_API_TOKEN }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
