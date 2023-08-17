@@ -4,7 +4,10 @@
     <script>
         var urlParams = new URLSearchParams(window.location.search);
         var name = urlParams.get('name');
-        document.write("Hello, " + name);
+        var newdiv = document.createElement("div");
+        newdiv.innerHTML = "Hello" + name;
+        // document.write("Hello, " + name);
     </script>
+    <
 </body>
 </html>
