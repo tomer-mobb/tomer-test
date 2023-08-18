@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html>
+<body>
+    <div id="hello"></div>
+    <script>
+        var urlParams = new URLSearchParams(window.location.search);
+        var name = urlParams.get('name');
+        var newdiv = document.getElementById("hello");
+        newdiv.innerHTML = "Hello " + name;
+    </script>
+</body>
+</html>
