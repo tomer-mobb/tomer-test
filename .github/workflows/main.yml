@@ -25,7 +25,7 @@ jobs:
         shell: bash -l {0}
       
       - name: Run Checkmarx SAST scan
-        run: ./cx scan create --project-name tomer-test-project -s ./ --report-format json --scan-types sast --branch nobranch
+        run: ./cx scan create --project-name tomer-test-project -s ./ --report-format json --scan-types sast --branch nobranch  --threshold "sast-high=1" 
         shell: bash -l {0}
       
       - name: Run Mobb on the findings and get fixes
